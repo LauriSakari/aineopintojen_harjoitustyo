@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "stupid-connect-four-ai"
+version = "0.1.0"
+description = ""
+authors = ["game-ai-platform-team"]
+license = "MIT License"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

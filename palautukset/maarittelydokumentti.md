@@ -2,7 +2,7 @@ Opiskelen tietojenkäsittelytiedettä suomeksi. Myös projektin kieli on suomi.
 Tehtävän ohjelmoinnissa käytetään Python kieltä.
 Voin myös arvioida C, C++ ja JavaScript kielillä tehtyjä töitä.
 
-Toteutan työssäni Connect 4 pelin, joka käyttää minimax algoritmiä, jota optimoidaan siirtojen järjestämisellä, iteratiivisella syvenemisellä ja pelitilanteen syvyyttä arvioivalla huristiikkafunktiolla.
+Toteutan työssäni Connect 4 pelin, joka käyttää minimax algoritmiä, jota optimoidaan siirtojen järjestämisellä, iteratiivisella syvenemisellä ja pelitilanteen syvyyttä arvioivalla heuristiikkafunktiolla.
 
 Käytän työssä myös harjoitustyön tekoälyalustaa graafisena käyttöliittymänä.
 
