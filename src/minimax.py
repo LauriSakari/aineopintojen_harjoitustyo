@@ -45,7 +45,7 @@ def check_vertical(boardPosition, history, player):
 
         i += 1
 
-    return connect
+    return max(connect, best_connect)
 
 def check_diagonal(boardPosition, history, player):
     row, col = history[-1]
@@ -70,7 +70,7 @@ def check_diagonal(boardPosition, history, player):
 
         row_start += 1
         col_start += 1
-    return connect
+    return max(connect, best_connect)
 
 def check_otherdiagonal(boardPosition, history, player):
     row, col = history[-1]
@@ -95,12 +95,12 @@ def check_otherdiagonal(boardPosition, history, player):
 
         row_start -= 1
         col_start += 1
-    return connect
+    return max(connect, best_connect)
 
 def evaluate_connections(connect):
     if connect == 4:
         return 100000
-    if connect == 500:
+    if connect == 3:
         return 5000
     if connect == 2:
         return 100
@@ -108,48 +108,38 @@ def evaluate_connections(connect):
         return 0
 
 def is_terminal(boardPosition, history, player):
+    if not history:
+        return False
+    
     player_number = 1
     if player == False:
         player_number = 2
 
-    # terminal = False
-    # for num in boardPosition[0]:
-    #     if num == 0:
-    #         return 0
+    connections = (
+            check_horizontal(boardPosition, history, player_number),
+            check_vertical(boardPosition, history, player_number),
+            check_diagonal(boardPosition, history, player_number),
+            check_otherdiagonal(boardPosition, history, player_number)
+    )
 
+    return any(connection >= 4 for connection in connections)
 
-    # if check_horizontal(boardPosition, history, player_number) == 4:
-    #     terminal = True
-    # if check_vertical(boardPosition, history, player_number) == 4:
-    #     terminal = True
-    # if check_diagonal(boardPosition, history, player_number) == 4:
-    #     terminal = True
-    # if check_otherdiagonal(boardPosition, history, player_number) == 4:
-    #     terminal = True
+    # slot_evaluation = evaluate(history)
 
-
-    horizontal = evaluate_connections(check_horizontal(boardPosition, history, player_number))
-    vertical = evaluate_connections(check_vertical(boardPosition, history, player_number))
-
-    diag1 = evaluate_connections(check_diagonal(boardPosition, history, player_number))
-    diag2 = evaluate_connections(check_otherdiagonal(boardPosition, history, player_number))
-
-    slot_evaluation = evaluate(history)
-
-    evaluation_sum = horizontal + vertical + diag1 + diag2 + slot_evaluation
-    # if check_vertical(boardPosition, history, player_number) == 4:
-    #     terminal = True
-    # if check_diagonal(boardPosition, history, player_number) == 4:
-    #     terminal = True
-    # if check_otherdiagonal(boardPosition, history, player_number) == 4:
-    #     terminal = True
+    # evaluation_sum = horizontal + vertical + diag1 + diag2 + slot_evaluation
+    # # if check_vertical(boardPosition, history, player_number) == 4:
+    # #     terminal = True
+    # # if check_diagonal(boardPosition, history, player_number) == 4:
+    # #     terminal = True
+    # # if check_otherdiagonal(boardPosition, history, player_number) == 4:
+    # #     terminal = True
    
-    row, col = history[-1]
+    # row, col = history[-1]
     
-    if player_number == 2:
-        evaluation_sum = evaluation_sum * -1
+    # if player_number == 2:
+    #     evaluation_sum = evaluation_sum * -1
 
-    return evaluation_sum, (row, col)
+    # return evaluation_sum, (row, col)
 
 def valid(row):
     if row < 0:
@@ -157,46 +147,53 @@ def valid(row):
     return True
     
 
-def minimax(boardPosition, history, count, depth, maximizingPlayer):
-    if len(history) != 0:
-        if depth == 0:
-            return is_terminal(boardPosition, history, maximizingPlayer)
+def minimax(boardPosition, history, next_row_by_column, depth, maximizingPlayer):
+    if history:
+        last_player = not maximizingPlayer
+        if is_terminal(boardPosition, history, last_player):
+            score = 100000 if last_player else -100000
+            return score, history[-1]
+        if all(not valid(row) for row in next_row_by_column):
+            return 0, None
+        
+    if depth == 0:
+        return evaluate(history), history[-1]
 
     if maximizingPlayer:
         maxEval = float('-inf')
         best_move = None
-        for col, row in enumerate(count):
+        for col, row in enumerate(next_row_by_column):
             if not valid(row):
                 continue
             boardPosition[row][col] = 1
             history.append((row, col))
-            count[col] = count[col] - 1
-            eval, _ = minimax(boardPosition, history, count, depth - 1, False) 
+            next_row_by_column[col] = next_row_by_column[col] - 1
+            eval, _ = minimax(boardPosition, history, next_row_by_column, depth - 1, False) 
             if eval > maxEval:
                 maxEval = eval
                 best_move = (row, col)
             history.pop()
             boardPosition[row][col] = 0
-            count[col] = count[col] + 1
+            next_row_by_column[col] = next_row_by_column[col] + 1
             
         return maxEval, best_move
 
     else:
         minEval = float('inf')
         best_move = None
-        for col, row in enumerate(count):
+        for col, row in enumerate(next_row_by_column):
             if not valid(row):
                 continue
             boardPosition[row][col] = 2
             history.append((row, col))
-            count[col] = count[col] - 1
-            eval, _ = minimax(boardPosition, history, count, depth - 1, True)
+            next_row_by_column[col] = next_row_by_column[col] - 1
+            eval, _ = minimax(boardPosition, history, next_row_by_column, depth - 1, True)
             if eval < minEval:
                 minEval = eval
                 best_move = (row, col)
             history.pop()
             boardPosition[row][col] = 0
-            count[col] = count[col] + 1
+            next_row_by_column[col] = next_row_by_column[col] + 1
             
         return minEval, best_move
 
