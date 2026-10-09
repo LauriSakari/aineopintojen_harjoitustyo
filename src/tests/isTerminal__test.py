@@ -1,5 +1,5 @@
 import unittest
-from minimax import check_vertical, check_horizontal, check_diagonal, check_otherdiagonal
+from minimax import check_vertical, check_horizontal, check_diagonal, check_otherdiagonal, is_terminal
 
 
 class TestIsTerminalChecks(unittest.TestCase):
@@ -43,5 +43,15 @@ class TestIsTerminalChecks(unittest.TestCase):
 
         assert check_otherdiagonal(board, [(r, c)], 1) == 4
 
-
+    def test_isTerminalFunction(self):
     
+        board = [[0] * 7 for _ in range(6)]
+
+        i = 2
+        while i < 6:
+            board[i][i] = 1
+            i += 1
+
+        assert is_terminal(board, [(2, 2)], True) == True
+        assert is_terminal(board, [(2, 2)], False) == False #returns false when wrong player
+

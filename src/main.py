@@ -1,13 +1,16 @@
-from minimax import is_terminal, minimax
+from minimax import is_terminal, minimax, calculate_next_move
+
 
 
 if __name__ == "__main__":
 
-    depth = 2
+    depth = 6
+    time_limit = 2
     count = [5] * 7
     current_state = [[0] * 7 for _ in range(6)]
     total_turns = 0
     player = 1
+    best_move_of_current_depth = 3
     
 
     def change_player(current_player):
@@ -55,10 +58,12 @@ if __name__ == "__main__":
                     #     print("MOVE:-1")
                     #     print("Error: No moves left!")
 
-                eval , next_move  = minimax(current_state, [], count, depth, False)
+                next_move = calculate_next_move(depth, count, current_state, best_move_of_current_depth, time_limit)
+
                 row = next_move[0]
                 col = next_move[1]
                 print(f"ROW: {row}, COL: {col}")
+                best_move_of_current_depth = 3
                 current_state[int(row)][int(col)] = player
                 count[col] = count[col] - 1 
                 print(f"player {player} moved in play")
