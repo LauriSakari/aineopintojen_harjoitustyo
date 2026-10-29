@@ -1,11 +1,12 @@
-from minimax import is_terminal, minimax, calculate_next_move
-
+from minimax import calculate_next_move
 
 
 if __name__ == "__main__":
 
+    # A short time limit keeps the protocol responsive; iterative deepening
+    # returns the best complete search found before the limit.
     depth = 6
-    time_limit = 2
+    time_limit = 0.2
     count = [5] * 7
     current_state = [[0] * 7 for _ in range(6)]
     total_turns = 0
@@ -14,6 +15,8 @@ if __name__ == "__main__":
     
 
     def change_player(current_player):
+        """Switch between the two players represented by 1 and 2."""
+
         if current_player == 1:
             return 2
         else:
@@ -21,11 +24,15 @@ if __name__ == "__main__":
 
 
     def print_state(state):
+        """Print the internal board representation for debugging."""
+
         for row in state:
             print(row)
         return
 
     def make_move(current_state, row, col, player):
+        """Place a player token using the protocol's row coordinate."""
+
         current_state[6 - row] [col] = player
         return current_state
 
@@ -33,32 +40,17 @@ if __name__ == "__main__":
         read = input().split(":")
         tag, data = read
         
-        
+        # The game server communicates through PLAY, MOVE, BOARD and RESET
+        # messages.  The local board is kept in sync after each message.
         match tag:
 
             case "PLAY":
                 print(f"finding move...{count}")
-  
-                # for i, value in enumerate(count):
-                    
-                #     if value < 6:
-                        
-                #         count[i] += 1
-                #         row = 6 - count[i]
-                #         col = i
-                        
-                        # current_state[6 - count[i]][i] = player
-                        # print(is_terminal(current_state, 6 - count[i], i, player))
-                        # print(f"player {player} moved in play")
-                        # player = change_player(player)
-                        # print_state(current_state)
-                        # print(f"MOVE:{i}")
-                    #     break
-                    # else:
-                    #     print("MOVE:-1")
-                    #     print("Error: No moves left!")
 
-                next_move = calculate_next_move(depth, count, current_state, best_move_of_current_depth, time_limit)
+                next_move = calculate_next_move(depth, count, current_state, best_move_of_current_depth, time_limit, player == 1)
+
+                if next_move == (0, None):
+                    break
 
                 row = next_move[0]
                 col = next_move[1]

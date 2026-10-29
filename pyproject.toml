@@ -7,7 +7,7 @@ license = "MIT License"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 
 
 [build-system]
@@ -15,5 +15,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 [dependency-groups]
 dev = [
-    "pytest (>=9.1.1,<10.0.0)"
+    "pytest (>=9.1.1,<10.0.0)",
+    "coverage (>=7.17.0,<8.0.0)"
 ]

@@ -1,6 +1,8 @@
 import time
 
+
 def evaluate(board_position, history, player):
+    """Evaluate the position from the point of view of the current player."""
     
     player_number = 1
     if player == False:
@@ -12,7 +14,7 @@ def evaluate(board_position, history, player):
                         [5,10,20,30,20,10,5],
                         [5,10,30,40,30,10,5],
                         [5,10,20,30,20,10,5],
-                        [5,10,15,20,15,10,5]])
+                        [5,10,15,30,15,10,5]])
     
     score = evaluationBoard[row][col]
 
@@ -32,6 +34,8 @@ def evaluate(board_position, history, player):
    
 
 def check_horizontal(board_position, history, player):
+    """Return the longest horizontal connection through the latest move."""
+
     connect = 0
     best_connect = 0
     row, _ = history[-1]
@@ -49,6 +53,8 @@ def check_horizontal(board_position, history, player):
     return max(connect, best_connect)
        
 def check_vertical(board_position, history, player):
+    """Return the longest vertical connection in the latest move's column."""
+
     _, col = history[-1]
     connect = 0
     best_connect = 0
@@ -70,6 +76,8 @@ def check_vertical(board_position, history, player):
     return max(connect, best_connect)
 
 def check_diagonal(board_position, history, player):
+    """Return the longest connection on the down-right diagonal."""
+
     row, col = history[-1]
     row_start = max(0, (row - col))
     col_start = max(0, (col - row))
@@ -95,6 +103,8 @@ def check_diagonal(board_position, history, player):
     return max(connect, best_connect)
 
 def check_otherdiagonal(board_position, history, player):
+    """Return the longest connection on the up-right diagonal."""
+
     row, col = history[-1]
     height = 5
     width = 6
@@ -120,6 +130,7 @@ def check_otherdiagonal(board_position, history, player):
     return max(connect, best_connect)
 
 def evaluate_connections(connect):
+    """Convert a connection length into a heuristic score."""
 
     if connect == 3:
         return 5000
@@ -129,6 +140,8 @@ def evaluate_connections(connect):
         return 0
 
 def is_terminal(board_position, history, player):
+    """Check whether the latest move ended the game."""
+
     if not history:
         return False
     
@@ -142,45 +155,35 @@ def is_terminal(board_position, history, player):
             check_diagonal(board_position, history, player_number),
             check_otherdiagonal(board_position, history, player_number)
     )
-
     return any(connection >= 4 for connection in connections)
 
-    # slot_evaluation = evaluate(history)
-
-    # evaluation_sum = horizontal + vertical + diag1 + diag2 + slot_evaluation
-    # # if check_vertical(board_position, history, player_number) == 4:
-    # #     terminal = True
-    # # if check_diagonal(board_position, history, player_number) == 4:
-    # #     terminal = True
-    # # if check_otherdiagonal(board_position, history, player_number) == 4:
-    # #     terminal = True
-   
-    # row, col = history[-1]
-    
-    # if player_number == 2:
-    #     evaluation_sum = evaluation_sum * -1
-
-    # return evaluation_sum, (row, col)
 
 def valid(row):
+    """Check whether a column still has an available row."""
+
     if row < 0:
         return False
     return True
     
 
 def minimax(board_position, history, next_row_by_column, depth, maximizingPlayer, alpha, beta, starting_move, think_until):
+    """Search for the best move using iterative alpha-beta minimax.
+
+    The board and the move history are modified while exploring a branch.
+    The ``finally`` block restores both structures before another branch is
+    searched, including when the time limit raises ``TimeoutError``.
+    """
+
     if time.monotonic() >= think_until:
         raise TimeoutError
     
     if history:
         last_player = not maximizingPlayer
         if is_terminal(board_position, history, last_player):
-            print(f"IS TERMINAL!!!!! {history[-1]}")
             score = 100000 if last_player else -100000
             return score, history[-1]
         if all(not valid(row) for row in next_row_by_column):
-            print("TASAPELI")
-            return 0, None
+            return (0, None)
         
     if depth == 0:
         return evaluate(board_position, history, not maximizingPlayer), history[-1]
@@ -190,7 +193,6 @@ def minimax(board_position, history, next_row_by_column, depth, maximizingPlayer
     if starting_move != 3:
         priority_order.remove(starting_move)
         priority_order = [starting_move] + priority_order
-        print(f"Priority order{priority_order}!!!!!!!!!!!!!!!!!!!!??????????????????????????????????????")
 
     if maximizingPlayer:
         maxEval = float('-inf')
@@ -209,6 +211,7 @@ def minimax(board_position, history, next_row_by_column, depth, maximizingPlayer
                     maxEval = eval
                     best_move = (row, col)
             finally:
+                # Undo the branch so the next candidate starts from the same position.
                 history.pop()
                 board_position[row][col] = 0
                 next_row_by_column[col] = next_row_by_column[col] + 1
@@ -235,6 +238,7 @@ def minimax(board_position, history, next_row_by_column, depth, maximizingPlayer
                     minEval = eval
                     best_move = (row, col)
             finally:
+                # Undo the branch so the next candidate starts from the same position.
                 history.pop()
                 board_position[row][col] = 0
                 next_row_by_column[col] = next_row_by_column[col] + 1
@@ -245,17 +249,32 @@ def minimax(board_position, history, next_row_by_column, depth, maximizingPlayer
         return minEval, best_move
 
 
-def calculate_next_move(depth, next_row_by_column, current_state, best_move_of_current_depth, time_limit):
+def calculate_next_move(depth, next_row_by_column, current_state, best_move_of_current_depth, time_limit, player):
+    """Find a move with iterative deepening until depth or time runs out."""
+
     think_until = time.monotonic() + time_limit
-    for current_depth in range(1, depth+1):
+    best_move = (0, None)
+    max_depth = sum(next_row_by_column) + 7 
+    print(f"max depth = {max_depth}")
+    current_depth = 1
+    while current_depth <= depth and current_depth <= max_depth:
+        print(f"Current depth = {current_depth}")
+        print(f"best move= {best_move_of_current_depth}")
         try:
-            eval, next_move  = minimax(current_state, [], next_row_by_column, current_depth, False, float('-inf'), float('inf'), best_move_of_current_depth, think_until)
+            eval, next_move  = minimax(current_state, [], next_row_by_column, current_depth, player, float('-inf'), float('inf'), best_move_of_current_depth, think_until)
+            print(eval)
+
             best_move_of_current_depth = next_move[1]
-            print(f"KIERROS {current_depth} LOPPU {best_move_of_current_depth} on paras siirto XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+            best_move = next_move
+            if player and eval >= 100000:
+                return best_move
+            if not player and eval <= -100000:
+                return best_move
 
         except TimeoutError:
+            print(f"Timeout! {time.monotonic() - think_until}")
             break
-        
-    
-    return next_move
 
+        current_depth += 1
+        
+    return best_move
